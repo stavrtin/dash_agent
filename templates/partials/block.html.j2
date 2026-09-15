@@ -1,5 +1,6 @@
 <div class="block" id="{{ b.id }}">
   <h4>{% if b.icon %}{{ b.icon }} {% endif %}{{ b.title }}</h4>
+
   {% if b.type == 'list' %}
     <ul>
       {% for it in b.items %}
