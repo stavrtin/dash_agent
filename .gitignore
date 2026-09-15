@@ -13,10 +13,13 @@ env/
 .DS_Store
 Thumbs.db
 
+input/
+
 # Логи и временные файлы
 *.log
 tmp/
 temp/
+
 
 # Python
 __pycache__/
