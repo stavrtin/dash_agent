@@ -1,0 +1,11 @@
+agent/
+├── main.py              # точка входа
+├── llm_client.py        # обёртка над LM Studio
+├── schemas.py           # Pydantic-модели (контракт JSON)
+├── prompts.py           # system/user промпты + JSON Schema для structured output
+├── renderer.py          # Jinja2 → HTML
+├── templates/
+│   └── dashboard.html.j2
+├── requirements.txt
+└── input/
+    └── Вставленный текст.txt

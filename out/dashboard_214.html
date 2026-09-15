@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Справка ДПиООС — недельная сводка</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box;
+      font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  body { background:#f5f8fc; padding:24px 16px; display:flex; justify-content:center; }
+  .container { max-width:1300px; width:100%; }
+
+  .header { margin-bottom:24px; }
+  .header .badge { display:inline-block; background:#1a5c9e; color:#fff;
+    font-size:12px; font-weight:600; letter-spacing:.8px; padding:4px 18px;
+    border-radius:30px; margin-bottom:6px; }
+  .header h1 { font-size:30px; font-weight:600; color:#0b1e33; }
+  .header h1 span { color:#1a5c9e; }
+  .header .sub { font-size:15px; color:#4a637f; margin-top:4px; }
+  .header .period { display:inline-block; background:#eef4fc; color:#1a5c9e;
+    font-weight:600; font-size:14px; padding:4px 16px; border-radius:30px; margin-top:6px; }
+
+  .nav-links { display:flex; flex-wrap:wrap; gap:8px 16px; background:#fff;
+    padding:10px 18px; border-radius:60px; box-shadow:0 4px 12px rgba(0,0,0,.04);
+    margin-bottom:24px; }
+  .nav-links a { color:#1f2e44; text-decoration:none; font-weight:500; font-size:14px;
+    transition:.2s; border-bottom:2px solid transparent; padding-bottom:2px; }
+  .nav-links a:hover { color:#1a5c9e; border-bottom-color:#1a5c9e; }
+
+  .grid-metrics { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+    gap:16px; margin-bottom:24px; }
+  .metric-card { background:#fff; border-radius:16px; padding:16px 18px;
+    box-shadow:0 4px 16px rgba(0,0,0,.04); text-decoration:none; color:inherit;
+    display:block; transition:.2s; }
+  .metric-card:hover { transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,.06); }
+  .metric-card .label { font-size:12px; font-weight:500; color:#5e728b;
+    text-transform:uppercase; letter-spacing:.3px; }
+  .metric-card .value { font-size:26px; font-weight:600; color:#0b1e33; margin:4px 0 2px; }
+  .metric-card .sub { font-size:13px; color:#3d5775; }
+  .metric-card .icon { float:right; font-size:22px; opacity:.25; }
+  .metric-card.blue .value { color:#1a5c9e; }
+  .metric-card.green .value { color:#1e8e5e; }
+  .metric-card.orange .value { color:#d97a2b; }
+  .metric-card.red .value { color:#b22234; }
+  .metric-card.purple .value { color:#6f4f9e; }
+
+  .section { background:#fff; border-radius:20px; padding:20px 22px;
+    margin-bottom:20px; box-shadow:0 4px 16px rgba(0,0,0,.03); }
+  .section-header { display:flex; align-items:center; gap:12px;
+    margin-bottom:16px; border-bottom:2px solid #f0f4fb; padding-bottom:10px; }
+  .section-header .num { display:inline-flex; align-items:center; justify-content:center;
+    background:#1a5c9e; color:#fff; font-weight:700; font-size:14px;
+    width:28px; height:28px; border-radius:50%; flex-shrink:0; }
+  .section-header h2 { font-size:19px; font-weight:600; color:#0b1e33; }
+
+  .row-2col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .block { margin-bottom:16px; }
+  .block:last-child { margin-bottom:0; }
+  .block h4 { font-size:15px; font-weight:600; color:#1a5c9e; margin-bottom:6px; }
+  .block p, .block li { font-size:15px; line-height:1.6; color:#1f2e44; }
+  .block ul { list-style:none; padding:0; }
+  .block ul li { position:relative; padding-left:18px; margin-bottom:4px; }
+  .block ul li::before { content:"•"; position:absolute; left:0; top:0;
+    color:#1a5c9e; font-weight:700; }
+
+  .smi-card { background:#fafcff; border-radius:14px; padding:14px 18px;
+    margin-bottom:12px; border-left:4px solid #1a5c9e; }
+  .smi-card .smi-header { display:flex; justify-content:space-between;
+    align-items:flex-start; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+  .smi-card .smi-title { font-weight:600; font-size:15px; color:#0b1e33; }
+  .smi-card .smi-critical { font-size:12px; font-weight:600; padding:2px 14px;
+    border-radius:30px; white-space:nowrap; }
+  .smi-critical.high { background:#fde8e8; color:#b22234; }
+  .smi-critical.medium { background:#fdf0e6; color:#d97a2b; }
+  .smi-critical.low { background:#e6f5ed; color:#1e8e5e; }
+  .smi-card .smi-desc { font-size:14px; color:#1f2e44; line-height:1.5; }
+  .smi-card .smi-link { font-size:13px; word-break:break-all; }
+  .smi-card .smi-link a { color:#1a5c9e; text-decoration:none; }
+  .smi-card .smi-reaction { font-size:14px; color:#3d5775; margin-top:6px;
+    padding-top:6px; border-top:1px solid #eef2f7; }
+
+  .smi-critical-group { margin:16px 0 10px; display:flex; align-items:center;
+    gap:8px; font-size:16px; font-weight:600; }
+
+  @media (max-width:900px) { .row-2col { grid-template-columns:1fr; gap:12px; } }
+  @media (max-width:700px) {
+    body { padding:16px 12px; }
+    .header h1 { font-size:24px; }
+    .grid-metrics { grid-template-columns:1fr 1fr; gap:12px; }
+    .metric-card .value { font-size:22px; }
+    .section { padding:16px; }
+  }
+  @media (max-width:450px) {
+    .grid-metrics { grid-template-columns:1fr; }
+    .header h1 { font-size:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">ДПИООС • НЕДЕЛЬНАЯ СВОДКА</div>
+    <h1>Справка <span>за неделю</span></h1>
+    <div class="sub">Обращения, инциденты, мониторинг, СМИ</div>
+      <div class="period">📅 2026-08-24 – 2026-08-30</div>
+  </div>
+
+  <div class="nav-links">
+    <a href="#section-metrics">📊 Показатели</a>
+        <a href="#dsd">📞 ДСД</a>
+        <a href="#illegal_felling">🌳 Незаконная вырубка зеленых насаждений</a>
+        <a href="#fallen_trees">🌲 Падение деревьев</a>
+        <a href="#water">💧 Вода</a>
+        <a href="#air">💨 Воздух</a>
+        <a href="#waste">🗑️ Загрязнение почв и сброс отходов</a>
+        <a href="#noise">📢 Шум</a>
+        <a href="#animals">🐾 Животные</a>
+        <a href="#prosecution">🚨 Прокуратура</a>
+        <a href="#expertise">🔍 Привлечение специалистов/экспертов</a>
+      <a href="#section-smi">📰 СМИ</a>
+  </div>
+
+  <div class="grid-metrics" id="section-metrics">
+      <a href="#dsd" class="metric-card blue">
+<span class="icon">📞</span>        <div class="label">ДСД: всего обращений</div>
+        <div class="value">322 <small style="font-size:14px;font-weight:500;color:#5e728b;">шт</small></div>
+<div class="sub">219 от граждан, 103 от 112</div>      </a>
+      <a href="#illegal_felling" class="metric-card red">
+<span class="icon">🌳</span>        <div class="label">Незаконная вырубка: факты</div>
+        <div class="value">4 <small style="font-size:14px;font-weight:500;color:#5e728b;">факт</small></div>
+<div class="sub">ВАО, СВАО, ЮАО</div>      </a>
+      <a href="#illegal_felling" class="metric-card red">
+<span class="icon">💰</span>        <div class="label">Незаконная вырубка: ущерб</div>
+        <div class="value">3504 <small style="font-size:14px;font-weight:500;color:#5e728b;">тыс. руб.</small></div>
+<div class="sub">ВАО, СВАО, ЮАО</div>      </a>
+      <a href="#water" class="metric-card orange">
+<span class="icon">💧</span>        <div class="label">Вода: обращения</div>
+        <div class="value">9 <small style="font-size:14px;font-weight:500;color:#5e728b;">шт</small></div>
+<div class="sub">Люблинский пруд, Ивановский пруд, Чертановский пруд</div>      </a>
+      <a href="#water" class="metric-card orange">
+<span class="icon">🔬</span>        <div class="label">Вода: обследовано</div>
+        <div class="value">33 <small style="font-size:14px;font-weight:500;color:#5e728b;">объект</small></div>
+<div class="sub">Факты загрязнения подтвердились на 17 объектах</div>      </a>
+      <a href="#air" class="metric-card purple">
+<span class="icon">💨</span>        <div class="label">Воздух: превышения</div>
+        <div class="value">3 <small style="font-size:14px;font-weight:500;color:#5e728b;">факт</small></div>
+<div class="sub">Оксид азота, сероводород, взвешенные частицы</div>      </a>
+      <a href="#air" class="metric-card purple">
+<span class="icon">🔥</span>        <div class="label">Воздух: пожары</div>
+        <div class="value">3 <small style="font-size:14px;font-weight:500;color:#5e728b;">факт</small></div>
+<div class="sub">Площадь 12,4 га</div>      </a>
+      <a href="#waste" class="metric-card green">
+<span class="icon">🗑️</span>        <div class="label">Отходы: мест на контроле</div>
+        <div class="value">114 <small style="font-size:14px;font-weight:500;color:#5e728b;">место</small></div>
+<div class="sub">В рамках пилотного проекта выявлено 2 места</div>      </a>
+      <a href="#waste" class="metric-card green">
+<span class="icon">♻️</span>        <div class="label">Отходы: ликвидировано</div>
+        <div class="value">13 <small style="font-size:14px;font-weight:500;color:#5e728b;">место</small></div>
+<div class="sub">Всего за 2026 – 193</div>      </a>
+      <a href="#noise" class="metric-card purple">
+<span class="icon">📢</span>        <div class="label">Шум: коммерческих объектов</div>
+        <div class="value">6 <small style="font-size:14px;font-weight:500;color:#5e728b;">объект</small></div>
+<div class="sub">Массовые обращения не поступали</div>      </a>
+      <a href="#noise" class="metric-card purple">
+<span class="icon">📢</span>        <div class="label">Шум: городских объектов</div>
+        <div class="value">5 <small style="font-size:14px;font-weight:500;color:#5e728b;">объект</small></div>
+<div class="sub">Массовые обращения не поступали</div>      </a>
+      <a href="#prosecution" class="metric-card red">
+<span class="icon">🚨</span>        <div class="label">Прокуратура: сообщений</div>
+        <div class="value">42 <small style="font-size:14px;font-weight:500;color:#5e728b;">сообщение</small></div>
+<div class="sub">К прошлой неделе: уменьшилось на -7%, к прошлому году: рост +8%</div>      </a>
+  </div>
+
+    <div class="section" id="dsd">
+      <div class="section-header">
+        <span class="num">1</span>
+        <h2>📞 ДСД</h2>
+      </div>
+
+<div class="block" id="dsd_total">
+  <h4>📞 Принято обращений</h4>
+      <p>
+          . 219 от граждан, 103 от 112. Резонансных инцидентов не выявлено.
+          <strong>Принято 322 обращения</strong>
+      </p>
+</div>    </div>
+    <div class="section" id="illegal_felling">
+      <div class="section-header">
+        <span class="num">2</span>
+        <h2>🌳 Незаконная вырубка зеленых насаждений</h2>
+      </div>
+
+<div class="block" id="illegal_felling_facts">
+  <h4>🌳 Факты незаконного повреждения и уничтожения</h4>
+      <p>
+          За отчётный период выявлено  незаконного повреждения и уничтожения зелёных насаждений, допущенных городским организациям: ВАО, ул. Салтыковская, д.15Г; ВАО, ул. 1-я Владимирская, д. 8; СВАО, пр. Шенкурский, д. 10Б; ЮАО, ул. Кустанайская. Размер вреда составил 3 504 тыс. руб.
+          <strong>4 факта</strong>
+      </p>
+</div>    </div>
+    <div class="section" id="fallen_trees">
+      <div class="section-header">
+        <span class="num">3</span>
+        <h2>🌲 Падение деревьев</h2>
+      </div>
+
+<div class="block" id="fallen_trees_facts">
+  <h4>🌲 Факты падения деревьев</h4>
+      <p>
+          Факты падения деревьев не фиксировались
+      </p>
+</div>    </div>
+    <div class="section" id="water">
+      <div class="section-header">
+        <span class="num">4</span>
+        <h2>💧 Вода</h2>
+      </div>
+
+<div class="block" id="water_complaints">
+  <h4>💧 Обращения</h4>
+      <p>
+          В ДДС поступило . Преимущественно на пятна и пленки нефтепродуктов (Люблинский пруд, Ивановский пруд, Чертановский пруд, р.Варварка). Массовых, социально значимых и повторных обращений не поступало.
+          <strong>9 обращений</strong>
+      </p>
+</div><div class="block" id="water_inspection">
+  <h4>🔬 Обследование</h4>
+      <p>
+          Проведено обследование 33 водных объектах. Факты загрязнения подтвердились на 17 объектах.
+      </p>
+</div>    </div>
+    <div class="section" id="air">
+      <div class="section-header">
+        <span class="num">5</span>
+        <h2>💨 Воздух</h2>
+      </div>
+
+<div class="block" id="air_exceedances">
+  <h4>💨 Превышения</h4>
+      <p>
+          В ночные часы 28, 29 августа общий прогноз НМУ. Зафиксированы превышения: по оксиду азота, сероводороду, взвешенным частицам РМ10 (благоустройство вблизи АСКЗА).
+      </p>
+</div><div class="block" id="air_fires">
+  <h4>🔥 Пожары</h4>
+      <p>
+          На территории ЦФО , площадь 12,4 га, ликвидированы. Влияния переноса на Москву не оказывалось.
+          <strong>3 природных пожара</strong>
+      </p>
+</div><div class="block" id="air_research">
+  <h4>🔬 Оперативные рейды</h4>
+      <p>
+          24.08 перативный рейд в районы Беговой и Хорошевский в связи с пылением при сносе на территории вокруг бывшего завода «МиГ». В период обследования работы осуществлялись, превышения по взвешенным частицам не зафиксированы, ведется анализ отобранных проб. 28.08 оперативный рейд в район Нагорный в связи с пожаром на складе резины. На жилой территории запахи не зафиксированы. Ведется анализ отобранных проб.
+      </p>
+</div>    </div>
+    <div class="section" id="waste">
+      <div class="section-header">
+        <span class="num">6</span>
+        <h2>🗑️ Загрязнение почв и сброс отходов</h2>
+      </div>
+
+<div class="block" id="waste_control">
+  <h4>🗑️ Места на контроле</h4>
+      <p>
+          На контроле в Департаменте находится  несанкционированного размещения отходов, в рамках пилотного проекта выявлено 2 места несанкционированного размещения отходов, в том числе с применением анализа информационных систем ИСОД МАДИ и АИС ОССиГ, а также данных результатов облетов БПЛА.
+          <strong>114 мест</strong>
+      </p>
+</div><div class="block" id="waste_cleaned">
+  <h4>♻️ Ликвидировано</h4>
+      <p>
+          За отчётный период ликвидировано , всего за 2026 – 193
+          <strong>13 захламлений</strong>
+      </p>
+</div>    </div>
+    <div class="section" id="noise">
+      <div class="section-header">
+        <span class="num">7</span>
+        <h2>📢 Шум</h2>
+      </div>
+
+<div class="block" id="noise_commercial">
+  <h4>📢 Коммерческих объектов</h4>
+      <p>
+          Выявлены превышения по шуму от 6 коммерческих и 5 городских объектов. Массовые обращения не поступали.
+      </p>
+</div><div class="block" id="noise_city">
+  <h4>📢 Городских объектов</h4>
+      <p>
+          Выявлены превышения по шуму от 6 коммерческих и . Массовые обращения не поступали.
+          <strong>5 городских объектов</strong>
+      </p>
+</div>    </div>
+    <div class="section" id="animals">
+      <div class="section-header">
+        <span class="num">8</span>
+        <h2>🐾 Животные</h2>
+      </div>
+
+<div class="block" id="animals_incidents">
+  <h4>🐾 Происшествий с животными</h4>
+      <p>
+          Происшествий с животными не выявлено
+      </p>
+</div>    </div>
+    <div class="section" id="prosecution">
+      <div class="section-header">
+        <span class="num">9</span>
+        <h2>🚨 Прокуратура</h2>
+      </div>
+
+<div class="block" id="prosecution_reports">
+  <h4>🚨 Сообщений</h4>
+      <p>
+          За неделю поступило 42 соообщений. К прошлой неделе: уменьшилось на -7%, к прошлому году: в норме, рост +8%
+      </p>
+</div><div class="block" id="prosecution_requests">
+  <h4>🚨 Запросов</h4>
+      <p>
+          МПП о проведении исследований измерений: 28.07.2026 проведено обследование отобраны пробы воды в реке Вороновка. Выявлены превышения установленных нормативов. Сброс осуществляет ООО «Авангард-Агро-Тула» (производство солода) 27.08.2026 обследование реки Яузы (вблизи Ростокинского пр) по вопросу ограничения доступа к реке. Доступ к водному объекту не ограничен. Ведется строительство пешеходного моста через реку Яузу.
+          <strong>2 запроса</strong>
+      </p>
+</div>    </div>
+    <div class="section" id="expertise">
+      <div class="section-header">
+        <span class="num">10</span>
+        <h2>🔍 Привлечение специалистов/экспертов</h2>
+      </div>
+
+<div class="block" id="expertise_checks">
+  <h4>🔍 Совместная проверка</h4>
+      <p>
+          с Кузьминской межрайонной прокуратурой строительной площадки по адресу: ЮВАО, Рязанский пр-т, вл. 6А. Застройщик: Фонд Реновации. Выявлены нарушения по содержанию и повреждению ЗН + захламление очаговое
+          <strong>Совместная проверка</strong>
+      </p>
+</div>    </div>
+
+    <div class="section" id="section-smi">
+      <div class="section-header">
+        <span class="num">11</span>
+        <h2>📰 СМИ — дайджест (24.08.2026 – 28.08.2026)</h2>
+      </div>
+
+        <div class="smi-critical-group">
+🔴
+          🔴 Высокая критичность
+        </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: 2-й Спасоналивковский переулок (ЦАО)</span>
+              <span class="smi-critical high">
+Высокая
+              </span>
+            </div>
+<div class="smi-desc">Вырубка деревьев и кустарников в сквере. Ссылка: http://telegram.me/yxyeli/12902 | Реагирование: в работе.</div><div class="smi-link"><a href="http://telegram.me/yxyeli/12902" target="_blank">http://telegram.me/yxyeli/12902</a></div><div class="smi-reaction"><strong>Реагирование:</strong> в работе</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: Парк Северное Тушино (СЗАО)</span>
+              <span class="smi-critical high">
+Высокая
+              </span>
+            </div>
+<div class="smi-desc">Критикуют благоустройство парка. Ссылка: http://telegram.me/xah345345/187648 | Реагирование: оформлены заключение и порубочный билет, предусмотрена компенсационная посадка.</div><div class="smi-link"><a href="http://telegram.me/xah345345/187648" target="_blank">http://telegram.me/xah345345/187648</a></div><div class="smi-reaction"><strong>Реагирование:</strong> заключение и порубочный билет, предусмотрена компенсационная посадка</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Загрязнение водного объекта: проспект Маршала Жукова, 78к3 (СЗАО)</span>
+              <span class="smi-critical high">
+Высокая
+              </span>
+            </div>
+<div class="smi-desc">Масляное пятно вдоль берега Москвы-реки по Живописной. Ссылка: http://telegram.me/shukinotop/12613 | Реагирование: водный объект в удовлетворительном состоянии, загрязнений не выявлено.</div><div class="smi-link"><a href="http://telegram.me/shukinotop/12613" target="_blank">http://telegram.me/shukinotop/12613</a></div><div class="smi-reaction"><strong>Реагирование:</strong> водный объект в удовлетворительном состоянии, загрязнений не выявлено</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Загрязнение водного объекта: посёлок Коммунарка, улица Александры Монаховой, 23 (ТиНАО)</span>
+              <span class="smi-critical high">
+Высокая
+              </span>
+            </div>
+<div class="smi-desc">Повторная жалоба на загрязнение прудов (Конный и Конторские). Ссылка: https://vk.ru/wall-169705869_274694 | Реагирование: проведены обследования, отобраны пробы, выявлена мёртвая утка, направлено письмо о необходимости уборки.</div><div class="smi-link"><a href="https://vk.ru/wall-169705869_274694" target="_blank">https://vk.ru/wall-169705869_274694</a></div><div class="smi-reaction"><strong>Реагирование:</strong> проведены обследования, отобраны пробы, выявлена мёртвая утка, направлено письмо о необходимости уборки</div>          </div>
+        <div class="smi-critical-group">
+🟡
+          🟡 Средняя критичность
+        </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: природно-исторический парк Кузьминки-Люблино (ЮВАО)</span>
+              <span class="smi-critical medium">
+Средняя
+              </span>
+            </div>
+<div class="smi-desc">Жители написали письмо Путину против вырубки яблоневого сада. Ссылка: https://moskvichmag.ru/gorod/zhiteli-kuzminok-napisali-pismo-putinu-trebuyut-ne-dopustit-vyrubki-yablonevogo-sada/ | Реагирование: заявление на яблоневый сад не поступало, порубочный билет не выдавался; по смежному участку готовится отказ.</div><div class="smi-link"><a href="https://moskvichmag.ru/gorod/zhiteli-kuzminok-napisali-pismo-putinu-trebuyut-ne-dopustit-vyrubki-yablonevogo-sada/" target="_blank">https://moskvichmag.ru/gorod/zhiteli-kuzminok-napisali-pismo-putinu-trebuyut-ne-dopustit-vyrubki-yablonevogo-sada/</a></div><div class="smi-reaction"><strong>Реагирование:</strong> заявление на яблоневый сад не поступало, порубочный билет не выдавался; по смежному участку готовится отказ</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: группа по району Очаково-Матвеевское (адреса: Озёрная улица, 21к1 и Озёрная улица, 31к1)</span>
+              <span class="smi-critical medium">
+Средняя
+              </span>
+            </div>
+<div class="smi-desc">Жалобы на запечатывание почв, отказ предъявить порубочный билет, вырубку. Ссылки: http://telegram.me/xah345345/187311, http://telegram.me/c/1174132515/2432057 | Реагирование: по адресу 21к1 – выдано предписание, возбуждено дело об административном правонарушении; по адресу 31к1 – проведена санитарная обрезка, объявлено предостережение, планируются дополнительные мероприятия.</div><div class="smi-link"><a href="http://telegram.me/xah345345/187311" target="_blank">http://telegram.me/xah345345/187311</a></div><div class="smi-reaction"><strong>Реагирование:</strong> по адресу 21к1 – выдано предписание, возбуждено дело об административном правонарушении; по адресу 31к1 – проведена санитарная обрезка, объявлено предостережение, планируются дополнительные мероприятия</div>          </div>
+        <div class="smi-critical-group">
+🟢          🟢 Низкая критичность
+        </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: Осенний бульвар, 16к1 (ЗАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жители сообщают о вырубке здоровых деревьев. Ссылка: http://telegram.me/krylatskoelive/26640 | Реагирование: в работе.</div><div class="smi-link"><a href="http://telegram.me/krylatskoelive/26640" target="_blank">http://telegram.me/krylatskoelive/26640</a></div><div class="smi-reaction"><strong>Реагирование:</strong> в работе</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: парк Вагоноремонт (САО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жители жалуются на вырубку здоровых деревьев вместе с аварийными. Ссылка: http://telegram.me/dmimos/33670 | Реагирование: в работе.</div><div class="smi-link"><a href="http://telegram.me/dmimos/33670" target="_blank">http://telegram.me/dmimos/33670</a></div><div class="smi-reaction"><strong>Реагирование:</strong> в работе</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: улица Дружбы, 6к1 (ЗАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Повреждение деревьев. Ссылка: http://vk.com/wall-169705869_274751 | Реагирование: в работе.</div><div class="smi-link"><a href="http://vk.com/wall-169705869_274751" target="_blank">http://vk.com/wall-169705869_274751</a></div><div class="smi-reaction"><strong>Реагирование:</strong> в работе</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: Малахитовая улица, 8к3 (СВАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Массовая вырубка деревьев во дворах. Ссылка: https://vk.ru/wall-186583695_20017 | Реагирование: разрешительная документация не оформлялась, направлено обращение в ОМВД для установления виновных.</div><div class="smi-link"><a href="https://vk.ru/wall-186583695_20017" target="_blank">https://vk.ru/wall-186583695_20017</a></div><div class="smi-reaction"><strong>Реагирование:</strong> разрешительная документация не оформлялась, направлено обращение в ОМВД для установления виновных</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: остров Бобровый (ЮАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Вырубка на западном мысе. Ссылка: http://telegram.me/riverpark_life/12288 | Реагирование: выданы порубочные билеты, предусмотрена компенсационная посадка, объявлено предостережение.</div><div class="smi-link"><a href="http://telegram.me/riverpark_life/12288" target="_blank">http://telegram.me/riverpark_life/12288</a></div><div class="smi-reaction"><strong>Реагирование:</strong> выданы порубочные билеты, предусмотрена компенсационная посадка, объявлено предостережение</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Порча зелёных насаждений: Кантемировская улица, 8к1 (ЮАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жалобы на затянувшиеся сроки благоустройства и повреждение зелёных насаждений. Ссылка: http://telegram.me/birulevo_tsar_online/22992 | Реагирование: работы на завершающей стадии, повреждений не выявлено, направлены рекомендации.</div><div class="smi-link"><a href="http://telegram.me/birulevo_tsar_online/22992" target="_blank">http://telegram.me/birulevo_tsar_online/22992</a></div><div class="smi-reaction"><strong>Реагирование:</strong> работы на завершающей стадии, повреждений не выявлено, направлены рекомендации</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Загрязнение водного объекта: пруд «Таблетка», квартал №52, Внуково (ТиНАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жалоба на гибель рыбы и состояние пруда. Ссылка: http://telegram.me/vnukovo2016_2017/2707 | Реагирование: визуальных признаков загрязнения не обнаружено, кислород в норме, отобрана проба.</div><div class="smi-link"><a href="http://telegram.me/vnukovo2016_2017/2707" target="_blank">http://telegram.me/vnukovo2016_2017/2707</a></div><div class="smi-reaction"><strong>Реагирование:</strong> визуальных признаков загрязнения не обнаружено, кислород в норме, отобрана проба</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Загрязнение водного объекта: пруд «Быково болото», район Матушкино (ЗелАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жалуются на масляные пятна. Ссылка: http://vk.com/wall-24420005_517398 | Реагирование: зафиксирована плёнка, отобрана проба, гибель флоры и фауны не зафиксирована.</div><div class="smi-link"><a href="http://vk.com/wall-24420005_517398" target="_blank">http://vk.com/wall-24420005_517398</a></div><div class="smi-reaction"><strong>Реагирование:</strong> зафиксирована плёнка, отобрана проба, гибель флоры и фауны не зафиксирована</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Шумные работы в ночное время: улица Металлургов, 56/2 (ВАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Жалоба на срабатывающую ночью пожарную сигнализацию и стук. Ссылка: http://telegram.me/peronovo/21209 | Реагирование: обращений в ГПБУ не поступало, ответственность на Жилищнике, измерения шума – Роспотребнадзор.</div><div class="smi-link"><a href="http://telegram.me/peronovo/21209" target="_blank">http://telegram.me/peronovo/21209</a></div><div class="smi-reaction"><strong>Реагирование:</strong> обращений в ГПБУ не поступало, ответственность на Жилищнике, измерения шума – Роспотребнадзор</div>          </div>
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">Шумные работы в ночное время: Липецкая улица, 13к2 (ЮАО)</span>
+              <span class="smi-critical low">
+Низкая              </span>
+            </div>
+<div class="smi-desc">Шум ночью от разгрузочных работ «Пятерочки». Ссылка: http://telegram.me/birulevo_tsar_online/23045 | Реагирование: обращений в Департамент не поступало.</div><div class="smi-link"><a href="http://telegram.me/birulevo_tsar_online/23045" target="_blank">http://telegram.me/birulevo_tsar_online/23045</a></div><div class="smi-reaction"><strong>Реагирование:</strong> обращений в Департамент не поступало</div>          </div>
+    </div>
+
+</div>
+</body>
+</html>

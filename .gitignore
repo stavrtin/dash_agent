@@ -1,0 +1,27 @@
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Настройки PyCharm / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи и временные файлы
+*.log
+tmp/
+temp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+dist/
+build/
+*.egg-info/

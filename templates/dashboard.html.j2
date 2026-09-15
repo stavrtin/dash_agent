@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Справка ДПиООС — недельная сводка</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box;
+      font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  body { background:#f5f8fc; padding:24px 16px; display:flex; justify-content:center; }
+  .container { max-width:1300px; width:100%; }
+
+  .header { margin-bottom:24px; }
+  .header .badge { display:inline-block; background:#1a5c9e; color:#fff;
+    font-size:12px; font-weight:600; letter-spacing:.8px; padding:4px 18px;
+    border-radius:30px; margin-bottom:6px; }
+  .header h1 { font-size:30px; font-weight:600; color:#0b1e33; }
+  .header h1 span { color:#1a5c9e; }
+  .header .sub { font-size:15px; color:#4a637f; margin-top:4px; }
+  .header .period { display:inline-block; background:#eef4fc; color:#1a5c9e;
+    font-weight:600; font-size:14px; padding:4px 16px; border-radius:30px; margin-top:6px; }
+
+  .nav-links { display:flex; flex-wrap:wrap; gap:8px 16px; background:#fff;
+    padding:10px 18px; border-radius:60px; box-shadow:0 4px 12px rgba(0,0,0,.04);
+    margin-bottom:24px; }
+  .nav-links a { color:#1f2e44; text-decoration:none; font-weight:500; font-size:14px;
+    transition:.2s; border-bottom:2px solid transparent; padding-bottom:2px; }
+  .nav-links a:hover { color:#1a5c9e; border-bottom-color:#1a5c9e; }
+
+  .grid-metrics { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+    gap:16px; margin-bottom:24px; }
+  .metric-card { background:#fff; border-radius:16px; padding:16px 18px;
+    box-shadow:0 4px 16px rgba(0,0,0,.04); text-decoration:none; color:inherit;
+    display:block; transition:.2s; }
+  .metric-card:hover { transform:translateY(-2px);
+    box-shadow:0 8px 24px rgba(0,0,0,.06); }
+  .metric-card .label { font-size:12px; font-weight:500; color:#5e728b;
+    text-transform:uppercase; letter-spacing:.3px; }
+  .metric-card .value { font-size:26px; font-weight:600; color:#0b1e33; margin:4px 0 2px; }
+  .metric-card .sub { font-size:13px; color:#3d5775; }
+  .metric-card .icon { float:right; font-size:22px; opacity:.25; }
+  .metric-card.blue .value { color:#1a5c9e; }
+  .metric-card.green .value { color:#1e8e5e; }
+  .metric-card.orange .value { color:#d97a2b; }
+  .metric-card.red .value { color:#b22234; }
+  .metric-card.purple .value { color:#6f4f9e; }
+
+  .section { background:#fff; border-radius:20px; padding:20px 22px;
+    margin-bottom:20px; box-shadow:0 4px 16px rgba(0,0,0,.03); }
+  .section-header { display:flex; align-items:center; gap:12px;
+    margin-bottom:16px; border-bottom:2px solid #f0f4fb; padding-bottom:10px; }
+  .section-header .num { display:inline-flex; align-items:center; justify-content:center;
+    background:#1a5c9e; color:#fff; font-weight:700; font-size:14px;
+    width:28px; height:28px; border-radius:50%; flex-shrink:0; }
+  .section-header h2 { font-size:19px; font-weight:600; color:#0b1e33; }
+
+  .row-2col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .block { margin-bottom:16px; }
+  .block:last-child { margin-bottom:0; }
+  .block h4 { font-size:15px; font-weight:600; color:#1a5c9e; margin-bottom:6px; }
+  .block p, .block li { font-size:15px; line-height:1.6; color:#1f2e44; }
+  .block ul { list-style:none; padding:0; }
+  .block ul li { position:relative; padding-left:18px; margin-bottom:4px; }
+  .block ul li::before { content:"•"; position:absolute; left:0; top:0;
+    color:#1a5c9e; font-weight:700; }
+
+  .smi-card { background:#fafcff; border-radius:14px; padding:14px 18px;
+    margin-bottom:12px; border-left:4px solid #1a5c9e; }
+  .smi-card .smi-header { display:flex; justify-content:space-between;
+    align-items:flex-start; flex-wrap:wrap; gap:6px; margin-bottom:4px; }
+  .smi-card .smi-title { font-weight:600; font-size:15px; color:#0b1e33; }
+  .smi-card .smi-critical { font-size:12px; font-weight:600; padding:2px 14px;
+    border-radius:30px; white-space:nowrap; }
+  .smi-critical.high { background:#fde8e8; color:#b22234; }
+  .smi-critical.medium { background:#fdf0e6; color:#d97a2b; }
+  .smi-critical.low { background:#e6f5ed; color:#1e8e5e; }
+  .smi-card .smi-desc { font-size:14px; color:#1f2e44; line-height:1.5; }
+  .smi-card .smi-link { font-size:13px; word-break:break-all; }
+  .smi-card .smi-link a { color:#1a5c9e; text-decoration:none; }
+  .smi-card .smi-reaction { font-size:14px; color:#3d5775; margin-top:6px;
+    padding-top:6px; border-top:1px solid #eef2f7; }
+
+  .smi-critical-group { margin:16px 0 10px; display:flex; align-items:center;
+    gap:8px; font-size:16px; font-weight:600; }
+
+  @media (max-width:900px) { .row-2col { grid-template-columns:1fr; gap:12px; } }
+  @media (max-width:700px) {
+    body { padding:16px 12px; }
+    .header h1 { font-size:24px; }
+    .grid-metrics { grid-template-columns:1fr 1fr; gap:12px; }
+    .metric-card .value { font-size:22px; }
+    .section { padding:16px; }
+  }
+  @media (max-width:450px) {
+    .grid-metrics { grid-template-columns:1fr; }
+    .header h1 { font-size:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">ДПИООС • НЕДЕЛЬНАЯ СВОДКА</div>
+    <h1>Справка <span>за неделю</span></h1>
+    <div class="sub">Обращения, инциденты, мониторинг, СМИ</div>
+    {% if report.meta.period_start and report.meta.period_end %}
+      <div class="period">📅 {{ report.meta.period_start }} – {{ report.meta.period_end }}</div>
+    {% endif %}
+  </div>
+
+  <div class="nav-links">
+    <a href="#section-metrics">📊 Показатели</a>
+    {% for s in report.sections %}
+      {% if s.blocks %}
+        <a href="#{{ s.id }}">{{ s.icon or '📌' }} {{ s.title }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if report.smi and report.smi.groups %}
+      <a href="#section-smi">📰 СМИ</a>
+    {% endif %}
+  </div>
+
+  <div class="grid-metrics" id="section-metrics">
+    {% for m in report.metrics %}
+      {% if m.anchor and m.anchor != '#' %}
+      <a href="{{ m.anchor }}" class="metric-card {{ m.color }}">
+      {% else %}
+      <div class="metric-card {{ m.color }}">
+      {% endif %}
+        {% if m.icon %}<span class="icon">{{ m.icon }}</span>{% endif %}
+        <div class="label">{{ m.label }}</div>
+        <div class="value">{{ m.value }}{% if m.unit %} <small style="font-size:14px;font-weight:500;color:#5e728b;">{{ m.unit }}</small>{% endif %}</div>
+        {% if m.sub %}<div class="sub">{{ m.sub }}</div>{% endif %}
+      {% if m.anchor and m.anchor != '#' %}
+      </a>
+      {% else %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% for s in report.sections %}
+    {% if s.blocks %}
+    <div class="section" id="{{ s.id }}">
+      <div class="section-header">
+        <span class="num">{{ s.num }}</span>
+        <h2>{% if s.icon %}{{ s.icon }} {% endif %}{{ s.title }}</h2>
+      </div>
+
+      {% set half = (s.blocks | length / 2) | round(0, 'ceil') | int %}
+      {% if s.blocks | length > 3 %}
+        <div class="row-2col">
+          <div>
+            {% for b in s.blocks[:half] %}
+              {% include "partials/block.html.j2" with context %}
+            {% endfor %}
+          </div>
+          <div>
+            {% for b in s.blocks[half:] %}
+              {% include "partials/block.html.j2" with context %}
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        {% for b in s.blocks %}
+          {% include "partials/block.html.j2" with context %}
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endfor %}
+
+  {% if report.smi and report.smi.groups %}
+    <div class="section" id="section-smi">
+      <div class="section-header">
+        <span class="num">{{ report.sections | length + 1 }}</span>
+        <h2>📰 СМИ — дайджест{% if report.smi.digest_period %} ({{ report.smi.digest_period }}){% endif %}</h2>
+      </div>
+
+      {% for g in report.smi.groups %}
+        <div class="smi-critical-group">
+          {% if g.criticality == 'high' %}🔴
+          {% elif g.criticality == 'medium' %}🟡
+          {% else %}🟢{% endif %}
+          {{ g.label }}
+        </div>
+        {% for c in g.cards %}
+          <div class="smi-card">
+            <div class="smi-header">
+              <span class="smi-title">{{ c.title }}</span>
+              <span class="smi-critical {{ g.criticality }}">
+                {% if g.criticality == 'high' %}Высокая
+                {% elif g.criticality == 'medium' %}Средняя
+                {% else %}Низкая{% endif %}
+              </span>
+            </div>
+            {% if c.desc %}<div class="smi-desc">{{ c.desc }}</div>{% endif %}
+            {% if c.link %}<div class="smi-link"><a href="{{ c.link }}" target="_blank">{{ c.link }}</a></div>{% endif %}
+            {% if c.reaction %}<div class="smi-reaction"><strong>Реагирование:</strong> {{ c.reaction }}</div>{% endif %}
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+</body>
+</html>

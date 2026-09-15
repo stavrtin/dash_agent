@@ -1,0 +1,28 @@
+<div class="block" id="{{ b.id }}">
+  <h4>{% if b.icon %}{{ b.icon }} {% endif %}{{ b.title }}</h4>
+  {% if b.type == 'list' %}
+    <ul>
+      {% for it in b.items %}
+        <li>
+          {% if it.strong and it.strong in it.text %}
+            {{ it.text | replace(it.strong, '') | trim }}
+            <strong>{{ it.strong }}</strong>
+          {% else %}
+            {{ it.text }}
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    {% for it in b.items %}
+      <p>
+        {% if it.strong and it.strong in it.text %}
+          {{ it.text | replace(it.strong, '') | trim }}
+          <strong>{{ it.strong }}</strong>
+        {% else %}
+          {{ it.text }}
+        {% endif %}
+      </p>
+    {% endfor %}
+  {% endif %}
+</div>

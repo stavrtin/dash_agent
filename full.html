@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Справка ДПиООС — недельная сводка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f5f8fc;
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+        }
+
+        /* ===== ЗАГОЛОВОК ===== */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #1a5c9e;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            padding: 4px 18px;
+            border-radius: 30px;
+            margin-bottom: 6px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            font-weight: 600;
+            color: #0b1e33;
+            letter-spacing: -0.3px;
+        }
+
+        .header h1 span {
+            color: #1a5c9e;
+        }
+
+        .header .sub {
+            font-size: 15px;
+            color: #4a637f;
+            margin-top: 4px;
+        }
+
+        .header .period {
+            display: inline-block;
+            background: #eef4fc;
+            color: #1a5c9e;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 4px 16px;
+            border-radius: 30px;
+            margin-top: 6px;
+        }
+
+        /* ===== НАВИГАЦИЯ ===== */
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            background: #ffffff;
+            padding: 10px 18px;
+            border-radius: 60px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            margin-bottom: 24px;
+        }
+
+        .nav-links a {
+            color: #1f2e44;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: 0.2s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-links a:hover {
+            color: #1a5c9e;
+            border-bottom-color: #1a5c9e;
+        }
+
+        .nav-links .nav-icon {
+            font-size: 16px;
+        }
+
+        /* ===== МЕТРИКИ ===== */
+        .grid-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.02);
+            transition: 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .metric-card .label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #5e728b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-card .value {
+            font-size: 26px;
+            font-weight: 600;
+            color: #0b1e33;
+            margin: 4px 0 2px;
+        }
+
+        .metric-card .sub {
+            font-size: 13px;
+            color: #3d5775;
+        }
+
+        .metric-card .icon {
+            float: right;
+            font-size: 22px;
+            opacity: 0.25;
+        }
+
+        .metric-card.blue .value { color: #1a5c9e; }
+        .metric-card.green .value { color: #1e8e5e; }
+        .metric-card.orange .value { color: #d97a2b; }
+        .metric-card.red .value { color: #b22234; }
+        .metric-card.purple .value { color: #6f4f9e; }
+
+        /* ===== СЕКЦИИ ===== */
+        .section {
+            scroll-margin-top: 20px;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f0f4fb;
+            padding-bottom: 10px;
+        }
+
+        .section-header .num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a5c9e;
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .section-header h2 {
+            font-size: 19px;
+            font-weight: 600;
+            color: #0b1e33;
+        }
+
+        .section-header .s-icon {
+            font-size: 20px;
+            margin-right: 4px;
+        }
+
+        /* ===== ДВЕ КОЛОНКИ ===== */
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ===== БЛОКИ ===== */
+        .block {
+            margin-bottom: 16px;
+            scroll-margin-top: 80px;
+        }
+
+        .block:last-child {
+            margin-bottom: 0;
+        }
+
+        .block h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a5c9e;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .block h4 .anchor-link {
+            font-size: 14px;
+            color: #7a8fa8;
+            text-decoration: none;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .block:hover h4 .anchor-link {
+            opacity: 1;
+        }
+
+        .block p,
+        .block li {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1f2e44;
+        }
+
+        .block ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .block ul li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 4px;
+        }
+
+        .block ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #1a5c9e;
+            font-weight: 700;
+        }
+
+        .block .tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 1px 12px;
+            border-radius: 30px;
+            margin-left: 4px;
+        }
+
+        .tag.green { background: #e6f5ed; color: #1e8e5e; }
+        .tag.orange { background: #fdf0e6; color: #d97a2b; }
+        .tag.red { background: #fde8e8; color: #b22234; }
+        .tag.blue { background: #eef4fc; color: #1a5c9e; }
+        .tag.gray { background: #f0f2f5; color: #5e728b; }
+
+        /* ===== КАРТОЧКИ СМИ ===== */
+        .smi-card {
+            background: #fafcff;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border-left: 4px solid #1a5c9e;
+            transition: 0.2s;
+        }
+
+        .smi-card:hover {
+            background: #f5f9ff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .smi-card .smi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .smi-card .smi-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #0b1e33;
+        }
+
+        .smi-card .smi-critical {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+        }
+
+        .smi-critical.high { background: #fde8e8; color: #b22234; }
+        .smi-critical.medium { background: #fdf0e6; color: #d97a2b; }
+        .smi-critical.low { background: #e6f5ed; color: #1e8e5e; }
+
+        .smi-card .smi-desc {
+            font-size: 14px;
+            color: #1f2e44;
+            line-height: 1.5;
+            margin-bottom: 2px;
+        }
+
+        .smi-card .smi-link {
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .smi-card .smi-link a {
+            color: #1a5c9e;
+            text-decoration: none;
+        }
+
+        .smi-card .smi-link a:hover {
+            text-decoration: underline;
+        }
+
+        .smi-card .smi-reaction {
+            font-size: 14px;
+            color: #3d5775;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .smi-card .smi-reaction strong {
+            color: #0b1e33;
+        }
+
+        .smi-critical-group {
+            margin: 16px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .smi-critical-group .crit-dot {
+            font-size: 20px;
+        }
+
+        /* ===== ЯКОРНЫЕ ССЫЛКИ В МЕТРИКАХ (только мобилка) ===== */
+        .metric-card .goto {
+            display: none;
+            font-size: 12px;
+            color: #1a5c9e;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 900px) {
+            .row-2col {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 16px 12px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .nav-links {
+                border-radius: 20px;
+                padding: 8px 14px;
+                gap: 6px 12px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+            }
+
+            .grid-metrics {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .metric-card {
+                padding: 12px 14px;
+            }
+
+            .metric-card .value {
+                font-size: 22px;
+            }
+
+            .metric-card .goto {
+                display: block;
+            }
+
+            .section {
+                padding: 16px;
+            }
+
+            .section-header h2 {
+                font-size: 17px;
+            }
+
+            .block p,
+            .block li,
+            .smi-card .smi-title,
+            .smi-card .smi-reaction {
+                font-size: 14px;
+            }
+
+            .smi-card {
+                padding: 12px 14px;
+            }
+
+            .smi-card .smi-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .block h4 .anchor-link {
+                opacity: 1 !important;
+                font-size: 13px;
+                color: #1a5c9e;
+                text-decoration: none;
+                background: #eef4fc;
+                padding: 0 10px;
+                border-radius: 30px;
+                font-weight: 500;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .grid-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header .badge {
+                font-size: 10px;
+                padding: 3px 14px;
+            }
+
+            .nav-links {
+                border-radius: 16px;
+                padding: 6px 12px;
+                gap: 4px 10px;
+                justify-content: center;
+            }
+
+            .nav-links a {
+                font-size: 12px;
+            }
+
+            .section-header .num {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+
+            .smi-card .smi-critical {
+                font-size: 11px;
+                padding: 1px 10px;
+            }
+
+            .smi-card .smi-link {
+                font-size: 12px;
+            }
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 16px;
+            }
+            .section,
+            .metric-card {
+                box-shadow: none !important;
+                border: 1px solid #e2e9f3;
+            }
+            .smi-card {
+                background: #fff;
+                border: 1px solid #e2e9f3;
+            }
+            .nav-links {
+                display: none;
+            }
+            .metric-card .goto {
+                display: none !important;
+            }
+            .block h4 .anchor-link {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ===== ЗАГОЛОВОК ===== -->
+    <div class="header">
+        <div class="badge">ДПИООС • НЕДЕЛЬНАЯ СВОДКА</div>
+        <h1>Справка <span>за неделю</span></h1>
+        <div class="sub">Обращения, инциденты, мониторинг, СМИ</div>
+        <div class="period">📅 10.08 – 16.08</div>
+    </div>
+
+    <!-- ===== НАВИГАЦИЯ ===== -->
+    <div class="nav-links">
+        <a href="#section-metrics"><span class="nav-icon">📊</span> Показатели</a>
+        <a href="#section-dsd"><span class="nav-icon">📞</span> ДСД</a>
+        <a href="#section-eco"><span class="nav-icon">🌿</span> Экология</a>
+        <a href="#section-smi"><span class="nav-icon">📰</span> СМИ</a>
+    </div>
+
+    <!-- ===== МЕТРИКИ (все с ссылками на разделы) ===== -->
+    <div class="grid-metrics" id="section-metrics">
+        <a href="#block-dsd" class="metric-card blue">
+            <span class="icon">📩</span>
+            <div class="label">ДСД</div>
+            <div class="value">341</div>
+            <div class="sub">235 граждан · 106 от 112</div>
+            <div class="goto">→ Перейти к ДСД</div>
+        </a>
+        <a href="#block-cutting" class="metric-card red">
+            <span class="icon">🌳</span>
+            <div class="label">Незаконная вырубка</div>
+            <div class="value">1</div>
+            <div class="sub">ущерб 16,8 млн руб.</div>
+            <div class="goto">→ Перейти к вырубке</div>
+        </a>
+        <a href="#block-water" class="metric-card orange">
+            <span class="icon">💧</span>
+            <div class="label">Водные объекты</div>
+            <div class="value">19</div>
+            <div class="sub">6 с подтверждённым загрязнением</div>
+            <div class="goto">→ Перейти к воде</div>
+        </a>
+        <a href="#block-air" class="metric-card purple">
+            <span class="icon">🌫️</span>
+            <div class="label">Воздух</div>
+            <div class="value">2</div>
+            <div class="sub">станции с превышениями</div>
+            <div class="goto">→ Перейти к воздуху</div>
+        </a>
+        <a href="#block-waste" class="metric-card green">
+            <span class="icon">🗑️</span>
+            <div class="label">Свалки / захламления</div>
+            <div class="value">137</div>
+            <div class="sub">9 свалок · 128 захламлений</div>
+            <div class="goto">→ Перейти к отходам</div>
+        </a>
+        <a href="#block-prosecutor" class="metric-card red">
+            <span class="icon">⚖️</span>
+            <div class="label">Прокуратура</div>
+            <div class="value">64</div>
+            <div class="sub">+14% к прошлой неделе</div>
+            <div class="goto">→ Перейти к прокуратуре</div>
+        </a>
+    </div>
+
+    <!-- ===== СЕКЦИЯ 1: ДСД ===== -->
+    <div class="section" id="section-dsd">
+        <div class="section-header">
+            <span class="num">1</span>
+            <h2><span class="s-icon">📞</span>ДСД — обращения граждан</h2>
+        </div>
+        <div class="row-2col">
+            <div class="block" id="block-dsd">
+                <h4>📊 Общая статистика</h4>
+                <ul>
+                    <li><strong>341</strong> обращение принято</li>
+                    <li><strong>235</strong> — от граждан</li>
+                    <li><strong>106</strong> — от 112</li>
+                    <li>Резонансных инцидентов не выявлено</li>
+                </ul>
+            </div>
+            <div class="block">
+                <h4>📌 Распределение по темам</h4>
+                <ul>
+                    <li><strong>Шум:</strong> превышения от 6 коммерческих и 10 городских объектов. Массовых обращений не поступало</li>
+                    <li><strong>Вода:</strong> 9 обращений, массовых жалоб не было, одна жалоба на гибель рыбы (Царицыно) — не подтвердилась</li>
+                    <li><strong>Воздух:</strong> массовых жалоб из Зеленограда и района Северный не поступало</li>
+                    <li><strong>Животные:</strong> происшествий не выявлено</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== СЕКЦИЯ 2: ЭКОЛОГИЯ ===== -->
+    <div class="section" id="section-eco">
+        <div class="section-header">
+            <span class="num">2</span>
+            <h2><span class="s-icon">🌿</span>Экологическая обстановка</h2>
+        </div>
+
+        <div class="row-2col">
+            <div>
+                <div class="block" id="block-cutting">
+                    <h4>🌳 Незаконная вырубка</h4>
+                    <p>Выявлен <strong>1 факт</strong> незаконного повреждения и уничтожения зелёных насаждений, допущенный городской организацией.</p>
+                    <p><strong>Размер ущерба:</strong> 16 851 645 руб.</p>
+                </div>
+                <div class="block" id="block-water">
+                    <h4>💧 Водные объекты</h4>
+                    <p>В ДДС поступило <strong>9 обращений</strong>. Массовых жалоб не поступало. Одна жалоба на гибель рыбы (Царицыно) — не подтвердилась.</p>
+                    <p>Всего, в том числе по ранее поступившим обращениям, обследованы <strong>19 водных объектов</strong>. Факты загрязнения подтвердились на <strong>6</strong>.</p>
+                </div>
+                <div class="block" id="block-air">
+                    <h4>🌫️ Воздух</h4>
+                    <ul>
+                        <li><strong>Превышения по оксиду азота</strong> — на 2 станциях, максимум вблизи МКАД</li>
+                        <li><strong>Превышения по сероводороду</strong> — вблизи ЛОС, КОС</li>
+                        <li><strong>Превышения по взвешенным частицам РМ10</strong> — на 2 станциях, максимум на АСКЗА «Зеленоград 16» (работы по благоустройству)</li>
+                        <li><strong>ЦФО:</strong> 27 природных пожаров на площади 35,2 га, ликвидированы. Влияния на Москву не оказывалось</li>
+                        <li><strong>16.08:</strong> пожары на складах в г. Подольске и г. Домодедово — влияния на Москву не оказывалось</li>
+                        <li><strong>16.08, Филимонковский (ТиНАО):</strong> на жилой территории ЖК «Академия Парк» зафиксирован запах канализации, превышения по сероводороду до 1,5 раз (предположительно от сброса в безымянный ручей от очистных сооружений КП «Академия Парк»)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div>
+                <div class="block" id="block-waste">
+                    <h4>🗑️ Загрязнение почв и сброс отходов</h4>
+                    <ul>
+                        <li>На контроле в Департаменте находится <strong>137 мест</strong> несанкционированного размещения отходов:</li>
+                        <li style="padding-left: 32px;">— <strong>9</strong> несанкционированных свалок</li>
+                        <li style="padding-left: 32px;">— <strong>128</strong> захламлений</li>
+                        <li>В рамках пилотного проекта выявлено <strong>5 мест</strong> несанкционированного размещения отходов (с применением ИСОД МАДИ, АИС ОССиГ, данных облетов БПЛА)</li>
+                    </ul>
+                </div>
+                <div class="block">
+                    <h4>🔊 Шум</h4>
+                    <ul>
+                        <li>Выявлены превышения по шуму:</li>
+                        <li style="padding-left: 32px;">— <strong>6</strong> коммерческих объектов</li>
+                        <li style="padding-left: 32px;">— <strong>10</strong> городских объектов</li>
+                        <li>Массовые обращения не поступали</li>
+                    </ul>
+                </div>
+                <div class="block">
+                    <h4>🐾 Животные</h4>
+                    <p>Происшествий с животными не выявлено.</p>
+                </div>
+                <div class="block" id="block-prosecutor">
+                    <h4>⚖️ Прокуратура</h4>
+                    <ul>
+                        <li>За неделю поступило <strong>64 сообщения</strong></li>
+                        <li>К прошлой неделе: <span class="tag orange">+14%</span></li>
+                        <li>К прошлому году: <span class="tag orange">+12%</span></li>
+                        <li>Массовые обращения не поступали</li>
+                    </ul>
+                </div>
+                <div class="block">
+                    <h4>👥 Привлечение специалистов/экспертов</h4>
+                    <ul>
+                        <li><strong>УГЭК:</strong> отходы, Щербинка, Астафьево — комиссионный выезд с ГИН, Управой и представителями ОЭК ТиНАО, подтверждено</li>
+                        <li><strong>МЭМ:</strong> геология, река Москва, ЮАО — обследование берега Нагатинского затона на эрозионные процессы, подтверждено</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== СЕКЦИЯ 3: СМИ ===== -->
+    <div class="section" id="section-smi">
+        <div class="section-header">
+            <span class="num">3</span>
+            <h2><span class="s-icon">📰</span>СМИ — дайджест (10.08 – 14.08)</h2>
+        </div>
+
+        <!-- ВЫСОКАЯ -->
+        <div class="smi-critical-group" style="color: #b22234;">
+            <span class="crit-dot">🔴</span> Высокая критичность
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Мосфильмовский пруд, улица Довженко (ЗАО) — гибель лебедей</span>
+                <span class="smi-critical high">🔴 Высокая</span>
+            </div>
+            <div class="smi-desc">Сообщения о гибели двух лебедей.</div>
+            <div class="smi-link"><a href="http://telegram.me/novostii_moskva/14627" target="_blank">http://telegram.me/novostii_moskva/14627</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Птицы находятся в ведении управы района Раменки. Информация о гибели не подтверждена, Департамент готовит письмо в префектуру ЗАО для проверки.</div>
+        </div>
+
+        <!-- СРЕДНЯЯ -->
+        <div class="smi-critical-group" style="color: #d97a2b;">
+            <span class="crit-dot">🟡</span> Средняя критичность
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">река Очаковка, район Тропарёво-Никулино (ЗАО) — нарушение водного законодательства</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="http://telegram.me/ochakovo_news/6755" target="_blank">http://telegram.me/ochakovo_news/6755</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Департамент осмотрел коллекторы, мёртвой рыбы не обнаружено, вода в реке в удовлетворительном состоянии.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Коньковский ручей, Битцевский лес (ЮЗАО) — окрашивание воды</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="http://telegram.me/xah345345/186272" target="_blank">http://telegram.me/xah345345/186272</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> В ходе обследования следов загрязнения не обнаружено, ручей в удовлетворительном состоянии.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Рублёвское шоссе, 28к1, Крылатское (ЗАО) — вырубка деревьев</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="http://telegram.me/krylatskoelive/26522" target="_blank">http://telegram.me/krylatskoelive/26522</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Выдан порубочный билет на вырубку 6 инвазивных деревьев (клён ясенелистный), работы проведены без нарушений.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">улица Авиаторов, Солнцево (ЗАО) — спил деревьев</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="https://vk.ru/wall-61379357_187578" target="_blank">https://vk.ru/wall-61379357_187578</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Департамент выдал Жилищнику два порубочных билета на вырубку сухостойных деревьев.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Новочеркасский бульвар, 26 (ЮВАО) — качество работ по благоустройству</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="https://vk.ru/wall-75237407_440842" target="_blank">https://vk.ru/wall-75237407_440842</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Выявлены несоответствия работам по благоустройству, подрядчику направлены рекомендации.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Природно-исторический парк Кузьминки-Люблино (ЮВАО) — благоустройство</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="https://moskva.bezformata.com/listnews/kuzminki-lyublino/162543951/" target="_blank">https://moskva.bezformata.com/listnews/kuzminki-lyublino/162543951/</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Работы ведутся по проекту, предусматривающему масштабные рубки и посадки. Подрядчику объявлены предостережения, территория на ежедневном контроле.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Помологический рассадник Коробковский сад (ЮЗАО) — критика работ</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="https://vk.ru/wall-176284600_892" target="_blank">https://vk.ru/wall-176284600_892</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> Выданы порубочные билеты на благоустройство и санитарные рубки, заявление на вторую часть работ возвращено на доработку.</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">Солнцевский проспект, район Солнцево (ЗАО) — ночной шум от «Яндекс Маркета»</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><a href="https://vk.ru/wall-61379357_187684" target="_blank">https://vk.ru/wall-61379357_187684</a></div>
+            <div class="smi-reaction"><strong>Реагирование:</strong> В Департамент жалоб не поступало, запланировано обследование «Мосэкомониторингом».</div>
+        </div>
+
+        <div class="smi-card">
+            <div class="smi-header">
+                <span class="smi-title">3-й Хорошёвский проезд (САО) — шум от стройки ЖК «Фора» и «Амбер сити»</span>
+                <span class="smi-critical medium">🟡 Средняя</span>
+            </div>
+            <div class="smi-link"><
