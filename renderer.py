@@ -61,6 +61,7 @@ class DashboardRenderer:
         # Регистрируем фильтр
         self.env.filters["fa_class"] = self._fa_class
         self.env.filters["dmy"] = self._dmy
+        self.env.filters["strip_link"] = self._strip_link
 
     @classmethod
     def _fa_class(cls, emoji: str | None) -> str:
@@ -89,4 +90,22 @@ class DashboardRenderer:
             y, mo, d = m.group(1), m.group(2), m.group(3)
             return f"{d}.{mo}.{y[2:]}"
         # уже dd.mm.yy или dd.mm.yyyy — оставить как есть
+        return s
+
+    @staticmethod
+    def _strip_link(text: str | None) -> str:
+        """
+        Убирает из текста фрагменты вида 'Ссылка: http...' и '| Реагирование: ...'
+        Оставляет только чистый текст описания.
+        """
+        if not text:
+            return ""
+        s = str(text)
+        # Убрать "Ссылка: <url>" в любом месте
+        s = re.sub(r"[|\s]*Ссылк[аиу][:\s]*https?://\S+", "", s, flags=re.IGNORECASE)
+        # Убрать "| Реагирование: ..." — оно уже выводится отдельным блоком
+        s = re.sub(r"[|\s]*Реагирование[:\s]*.*$", "", s, flags=re.IGNORECASE | re.DOTALL)
+        # Причесать пробелы и точки в конце
+        s = re.sub(r"\s+", " ", s).strip()
+        s = s.rstrip(" .,;:|")
         return s

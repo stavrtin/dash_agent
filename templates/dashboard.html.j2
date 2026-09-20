@@ -210,11 +210,19 @@
           {% for c in g.cards %}
             <div class="media-item">
               <div><i class="fas fa-circle small-icon"></i> <strong>{{ c.title }}</strong></div>
-              {% if c.desc %}<div class="media-desc">{{ c.desc }}</div>{% endif %}
-              {% if c.link %}<a href="{{ c.link }}" target="_blank">{{ c.link }}</a>{% endif %}
-              {% if c.reaction %}
-                <div class="media-react"><i class="fas fa-reply"></i> {{ c.reaction }}</div>
-              {% endif %}
+
+                  {% set clean_desc = c.desc | strip_link %}
+                  {% if clean_desc %}
+                    <div class="media-desc">{{ clean_desc }}</div>
+                  {% endif %}
+
+                  {% if c.link %}
+                    <a href="{{ c.link }}" target="_blank">{{ c.link }}</a>
+                  {% endif %}
+
+                  {% if c.reaction %}
+                    <div class="media-react"><strong>Реагирование:</strong> {{ c.reaction }}</div>
+                  {% endif %}
             </div>
           {% endfor %}
         </div>
