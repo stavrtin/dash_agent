@@ -46,6 +46,19 @@ class DashboardRenderer:
         "🦊": "fas fa-paw",
     }
 
+    # Единицы, которые НЕ показываем (число говорит само за себя)
+    _UNIT_SUPPRESS = {
+        "шт", "шт.", "штук",
+        "факт", "фактов", "факта",
+        "объект", "объектов", "объекта",
+        "место", "мест",
+        "сообщение", "сообщений", "сообщения",
+        "обращение", "обращений", "обращения",
+        "случай", "случаев", "случая",
+        "человек", "чел.", "чел",
+    }
+
+
     def __init__(self, templates_dir: str | Path = "templates"):
         templates_dir = Path(templates_dir).resolve()
         if not templates_dir.exists():
@@ -62,6 +75,7 @@ class DashboardRenderer:
         self.env.filters["fa_class"] = self._fa_class
         self.env.filters["dmy"] = self._dmy
         self.env.filters["strip_link"] = self._strip_link
+        self.env.filters["unit_label"] = self._unit_label
 
     @classmethod
     def _fa_class(cls, emoji: str | None) -> str:
@@ -109,3 +123,15 @@ class DashboardRenderer:
         s = re.sub(r"\s+", " ", s).strip()
         s = s.rstrip(" .,;:|")
         return s
+
+    @classmethod
+    def _unit_label(cls, unit: str | None) -> str:
+        """
+        Возвращает либо ' · <unit>', либо пустую строку — если единица штучная.
+        """
+        if not unit:
+            return ""
+        u = str(unit).strip().lower()
+        if u in cls._UNIT_SUPPRESS:
+            return ""
+        return f" · {unit}"

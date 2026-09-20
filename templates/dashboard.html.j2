@@ -164,7 +164,7 @@
                 {% for m in section_metrics %}
                   <li>
                     <span class="stat-number">{{ m.value }}</span>
-                    <span class="stat-label">{{ m.label }}{% if m.unit %} · {{ m.unit }}{% endif %}</span>
+                    <span class="stat-label">{{ m.label }}{{ m.unit | unit_label }}</span>
                   </li>
                 {% endfor %}
               </ul>
