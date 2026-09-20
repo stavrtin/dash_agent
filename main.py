@@ -63,8 +63,9 @@ def main() -> int:
     p.add_argument("-j", "--json",   type=Path,
                    default=Path("out/report.json"))
     p.add_argument("--base-url", default="http://127.0.0.1:11434",
-                   help="Адрес Ollama (через SSH-туннель = 127.0.0.1:11434)")
+                   help="Ollama через SSH-туннель (локальный порт)")
     p.add_argument("--model", default="qwen2.5:14b-instruct-q4_K_M",
+    # p.add_argument("--model", default="qwen3-4b-instruct-2507",
                    help="Имя модели в Ollama")
     args = p.parse_args()
 

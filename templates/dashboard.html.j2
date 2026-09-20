@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Экологический дашборд · {{ report.meta.period_start }} – {{ report.meta.period_end }}</title>
+<title>Итоги недели с {{ report.meta.period_start | dmy }} по {{ report.meta.period_end | dmy }}</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box;
@@ -129,12 +129,12 @@
 
   {# ---------- ЗАГОЛОВОК ---------- #}
   <div class="header">
-    <h1><i class="fas fa-leaf"></i> Экологический дашборд</h1>
+    <h1><i class="fas fa-leaf"></i> Итоги недели с {{ report.meta.period_start | dmy }} по {{ report.meta.period_end | dmy }}</h1>
     {% if report.meta.period_start and report.meta.period_end %}
-      <div class="date-badge">
-        <i class="fas fa-calendar-alt"></i>
-        {{ report.meta.period_start }} – {{ report.meta.period_end }}
-      </div>
+<div class="date-badge">
+  <i class="fas fa-calendar-alt"></i>
+  {{ report.meta.period_start | dmy }} – {{ report.meta.period_end | dmy }}
+</div>
     {% endif %}
   </div>
 
