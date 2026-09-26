@@ -2,6 +2,7 @@
 """
 Клиент для Ollama через нативный /api/chat.
 Работает с моделью 14B на удалённом сервере через SSH-туннель.
+Ремонт JSON: json-repair → escape control chars → repair truncated.
 """
 from __future__ import annotations
 import json
@@ -10,6 +11,13 @@ import re
 from typing import Any
 
 import requests
+
+try:
+    from json_repair import repair_json
+    HAS_JSON_REPAIR = True
+except ImportError:
+    HAS_JSON_REPAIR = False
+    repair_json = None
 
 from prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
 
@@ -23,7 +31,7 @@ class LLMClient:
         model: str = "qwen2.5:14b-instruct-q4_K_M",
         temperature: float = 0.2,
         top_p: float = 0.95,
-        max_tokens: int = 16000,
+        max_tokens: int = 24000,
         num_ctx: int = 32768,
         timeout: float = 900.0,
     ):
@@ -35,13 +43,12 @@ class LLMClient:
         self.num_ctx = num_ctx
         self.timeout = timeout
         log.info(
-            "LLMClient: base_url=%s, model=%s, num_ctx=%d, max_tokens=%d",
-            self.base_url, self.model, self.num_ctx, self.max_tokens,
+            "LLMClient: base_url=%s, model=%s, num_ctx=%d, max_tokens=%d, json_repair=%s",
+            self.base_url, self.model, self.num_ctx, self.max_tokens, HAS_JSON_REPAIR,
         )
 
     # ------------------------------------------------------------------ public
     def extract_report(self, raw_text: str) -> dict[str, Any]:
-        """Один запрос — один JSON."""
         user_prompt = USER_PROMPT_TEMPLATE.format(text=raw_text)
         return self._call(SYSTEM_PROMPT, user_prompt)
 
@@ -56,6 +63,7 @@ class LLMClient:
                 {"role": "user",   "content": user_prompt},
             ],
             "stream": False,
+            "format": "json",   # ← грамматика Ollama: только валидный JSON
             "options": {
                 "temperature": self.temperature,
                 "top_p": self.top_p,
@@ -83,26 +91,41 @@ class LLMClient:
                 data.get("done_reason"),
             )
 
-        # --- попытка 1: как есть
+        # =====================  ЦЕПОЧКА РЕМОНТА JSON  =====================
+
+        # Шаг 0: обычный json.loads — как есть
         try:
             return json.loads(content)
         except json.JSONDecodeError as e:
-            log.warning("json.loads упал: %s. Пробую починить...", e)
+            log.warning("json.loads упал: %s. Пробую json-repair...", e)
 
-        # --- попытка 2: репарация обрыва
-        repaired = self._repair_truncated_json(content)
+        # Шаг 1: json-repair — самый мощный ремонт
+        if HAS_JSON_REPAIR:
+            try:
+                data2 = repair_json(content, return_objects=True)
+                if isinstance(data2, dict) and data2:
+                    log.info("JSON успешно отремонтирован через json-repair.")
+                    return data2
+                log.warning("json-repair вернул не-словарь: %r", type(data2))
+            except Exception as e:
+                log.warning("json-repair не справился: %s", e)
+
+        # Шаг 2: escape control chars + repair truncated
+        escaped = self._escape_control_chars(content)
+        repaired = self._repair_truncated_json(escaped)
         if repaired is not None:
             try:
                 result = json.loads(repaired)
-                log.info("JSON успешно отремонтирован.")
+                log.info("JSON успешно отремонтирован (escape + repair).")
                 return result
             except json.JSONDecodeError as e:
-                log.warning("После ремонта всё ещё невалидный: %s", e)
+                log.warning("После escape + repair всё ещё невалидный: %s", e)
 
-        # --- сдаёмся
+        # Шаг 3: сдаёмся
         log.error("Невалидный JSON. Первые 800 символов:\n%s", content[:800])
         raise RuntimeError("Невалидный JSON от LLM")
 
+    # ---------------------------------------------------------------- helpers
     @staticmethod
     def _strip_code_fence(s: str) -> str:
         s = s.strip()
@@ -111,6 +134,46 @@ class LLMClient:
             if s.endswith("```"):
                 s = s[:-3]
         return s.strip()
+
+    @staticmethod
+    def _escape_control_chars(s: str) -> str:
+        """
+        Заменяет сырые управляющие символы (\\n, \\r, \\t) внутри JSON-строк
+        на их escape-последовательности. Символы ВНЕ строк не трогает.
+        """
+        out = []
+        in_string = False
+        escape = False
+
+        for ch in s:
+            if escape:
+                out.append(ch)
+                escape = False
+                continue
+
+            if ch == "\\" and in_string:
+                out.append(ch)
+                escape = True
+                continue
+
+            if ch == '"':
+                in_string = not in_string
+                out.append(ch)
+                continue
+
+            if in_string:
+                if ch == "\n":
+                    out.append("\\n")
+                elif ch == "\r":
+                    out.append("\\r")
+                elif ch == "\t":
+                    out.append("\\t")
+                else:
+                    out.append(ch)
+            else:
+                out.append(ch)
+
+        return "".join(out)
 
     @staticmethod
     def _repair_truncated_json(s: str) -> str | None:
