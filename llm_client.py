@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 import requests
+from prompts import JSON_SCHEMA
 
 try:
     from json_repair import repair_json
@@ -29,10 +30,10 @@ class LLMClient:
         self,
         base_url: str = "http://127.0.0.1:11434",
         model: str = "qwen2.5:14b-instruct-q4_K_M",
-        temperature: float = 0.2,
+        temperature: float = 0.1,
         top_p: float = 0.95,
-        max_tokens: int = 24000,
-        num_ctx: int = 32768,
+        max_tokens: int = 16000,
+        num_ctx: int = 16384,
         timeout: float = 900.0,
     ):
         self.base_url = base_url.rstrip("/")
@@ -63,7 +64,8 @@ class LLMClient:
                 {"role": "user",   "content": user_prompt},
             ],
             "stream": False,
-            "format": "json",   # ← грамматика Ollama: только валидный JSON
+            # "format": "json",   # ← грамматика Ollama: только валидный JSON
+            "format": JSON_SCHEMA["schema"],
             "options": {
                 "temperature": self.temperature,
                 "top_p": self.top_p,

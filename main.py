@@ -20,7 +20,16 @@ logging.basicConfig(
 log = logging.getLogger("agent")
 
 
-# ---------- Защита от «мусорного» ответа модели ----------
+# ============================================================================
+# Защита от «мусорного» ответа модели
+# ============================================================================
+REQUIRED_SECTIONS = {
+    "prosecutor",   # Прокуратура
+    "experts",      # Привлечение специалистов
+    "air",          # Воздух
+    "water",        # Вода
+    "land_pollution",  # Отходы
+}
 
 def _has_chinese(text: str) -> bool:
     """Проверяет, есть ли в тексте китайские иероглифы."""
@@ -49,10 +58,136 @@ def _validate_json_structure(data: dict) -> list[str]:
     if _has_chinese(json_str):
         problems.append("обнаружен китайский текст")
 
+    # Проверка обязательных секций
+    present_sections = {s.get("id", "") for s in data.get("sections", [])}
+    missing_sections = REQUIRED_SECTIONS - present_sections
+    if missing_sections:
+        problems.append(f"отсутствуют секции: {sorted(missing_sections)}")
+
+    return problems
+
     return problems
 
 
-def _safe_extract(client: LLMClient, raw: str, max_attempts: int = 2) -> dict | None:
+# ============================================================================
+# Санитайзер метрик: подстановка осмысленных label
+# ============================================================================
+
+# Соответствие «id метрики» → «человекочитаемый label».
+# Срабатывает, если модель вернула label, совпадающий с названием раздела.
+_LABEL_FIXES = {
+    # --- ДСД / Обращения ---
+    "dsd":                     "Всего обращений",
+    "dsd_total":               "Всего обращений",
+    "dsd_citizens":            "От граждан",
+    "dsd_citizen_calls":       "От граждан",
+    "dsd_112":                 "От 112",
+    "dsd_from_112":            "От 112",
+    "calls":                   "Обращений",
+    "calls_total":             "Обращений",
+    "calls_weekly_change":     "Изменение к прошлой неделе",
+    "calls_yearly_change":     "Изменение к прошлому году",
+
+    # --- Незаконная вырубка ---
+    "illegal_felling":         "Фактов незаконной вырубки",
+    "illegal_felling_count":   "Фактов незаконной вырубки",
+    "illegal_felling_fact":    "Фактов незаконной вырубки",
+    "illegal_felling_damage":  "Ущерб от незаконной вырубки",
+    "vyrubka":                 "Фактов незаконной вырубки",
+
+    # --- Падение деревьев ---
+    "falling_trees":           "Фактов падения деревьев",
+    "fallen_trees":            "Фактов падения деревьев",
+    "tree_fall":               "Фактов падения деревьев",
+
+    # --- Вода ---
+    "water_complaints":        "Обращений по воде",
+    "water_investigated":      "Обследовано водных объектов",
+    "water_surveyed":          "Обследовано водных объектов",
+    "water_pollution":         "Загрязнений подтверждено",
+    "water":                   "Обращений по воде",
+
+    # --- Воздух ---
+    "air_exceedances":         "Превышений по воздуху",
+    "air_pollution":           "Превышений по воздуху",
+    "air_fires":               "Природных пожаров",
+    "air_fire":                "Природных пожаров",
+    "air_smell":               "Жалоб на запах",
+    "air":                     "Превышений по воздуху",
+
+    # --- Отходы / почвы ---
+    "waste_control":           "Мест на контроле",
+    "waste_places":            "Мест на контроле",
+    "waste_removed":           "Ликвидировано",
+    "waste_liquidated":        "Ликвидировано",
+    "waste":                   "Мест на контроле",
+    "zahlamleniya":            "Мест на контроле",
+
+    # --- Шум ---
+    "noise_commercial":        "Превышений: коммерческие объекты",
+    "noise_city":              "Превышений: городские объекты",
+    "noise_total":             "Превышений по шуму",
+    "noise":                   "Превышений по шуму",
+    "shum":                    "Превышений по шуму",
+
+    # --- Животные ---
+    "animals_incidents":       "Происшествий с животными",
+    "animals":                 "Происшествий с животными",
+
+    # --- Прокуратура ---
+    "prosecutor_reports":      "Сообщений из прокуратуры",
+    "prosecutor_week":         "Изменение к прошлой неделе",
+    "prosecutor_year":         "Изменение к прошлому году",
+    "prosecutor":              "Сообщений из прокуратуры",
+    "prosecutor_total":        "Сообщений из прокуратуры",
+
+    # --- Специалисты ---
+    "experts":                 "Проверок с привлечением специалистов",
+    "experts_gek":             "Проверок УГЭК",
+    "experts_mem":             "Проверок МЭМ",
+}
+
+# Названия разделов, которые модель иногда кладёт в label.
+# Если label совпадает с одним из них — заменяем на осмысленный.
+_GENERIC_LABELS = {
+    "воздух", "вода", "отходы", "шум", "прокуратура", "дсд",
+    "вырубка", "незаконная вырубка", "животные", "падение деревьев",
+    "загрязнение почв", "загрязнение почв и сброс отходов",
+    "привлечение специалистов", "привлечение специалистов/экспертов",
+    "обращения", "дата",
+}
+
+
+def _fix_metric_labels(data: dict) -> dict:
+    """
+    Подставляет осмысленные label для известных id метрик,
+    если модель вернула слишком короткое название или название раздела.
+    """
+    for m in data.get("metrics", []):
+        mid = (m.get("id") or "").strip()
+        current = (m.get("label") or "").strip()
+        current_low = current.lower()
+
+        # Подставляем, если:
+        #   1) id известен, И
+        #   2) label пустой ИЛИ label совпадает с названием раздела
+        if mid in _LABEL_FIXES and (
+            not current or current_low in _GENERIC_LABELS
+        ):
+            m["label"] = _LABEL_FIXES[mid]
+            log.info(
+                "Заменён label метрики '%s': '%s' → '%s'",
+                mid, current, m["label"],
+            )
+
+    return data
+
+
+# ============================================================================
+# Безопасный вызов LLM с проверкой структуры
+# ============================================================================
+
+def _safe_extract(client: LLMClient, raw: str, max_attempts: int = 3) -> dict | None:
     """
     Вызывает LLM до max_attempts раз, пока не получит корректный JSON
     со всеми нужными ключами и без китайских иероглифов.
@@ -68,6 +203,7 @@ def _safe_extract(client: LLMClient, raw: str, max_attempts: int = 2) -> dict | 
         problems = _validate_json_structure(data)
         if not problems:
             log.info("JSON прошёл проверку структуры.")
+            data = _fix_metric_labels(data)
             return data
 
         log.warning("Проблемы с JSON: %s", "; ".join(problems))
@@ -76,7 +212,9 @@ def _safe_extract(client: LLMClient, raw: str, max_attempts: int = 2) -> dict | 
     return None
 
 
-# ---------- Основной пайплайн ----------
+# ============================================================================
+# Основной пайплайн
+# ============================================================================
 
 def run(
     input_path: Path,
@@ -89,7 +227,7 @@ def run(
     log.info("Прочитан файл %s (%d символов)", input_path, len(raw))
 
     client = LLMClient(base_url=base_url, model=model)
-    data = _safe_extract(client, raw, max_attempts=2)
+    data = _safe_extract(client, raw, max_attempts=3)
 
     if data is None:
         log.error("Агент не смог получить валидный JSON. Дашборд не создан.")
