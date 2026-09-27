@@ -153,18 +153,19 @@
           {% set section_metrics = report.metrics | selectattr('anchor', 'equalto', '#' ~ s.id) | list %}
           {% if section_metrics %}
             {% if section_metrics | length == 1 %}
-              {% set m = section_metrics[0] %}
-              <div class="stat-row">
-                <span class="stat-number">{{ m.value }}</span>
-                {% if m.unit %}<span class="stat-label">{{ m.unit }}</span>{% endif %}
-              </div>
-              {% if m.sub %}<div class="metric-sub">{{ m.sub }}</div>{% endif %}
-            {% else %}
+  {% set m = section_metrics[0] %}
+  {% set u = m.value | pluralize(m.unit) | replace(' · ', '') %}
+  <div class="stat-row">
+    <span class="stat-number">{{ m.value }}</span>
+    {% if u %}<span class="stat-label">{{ u }}</span>{% endif %}
+  </div>
+  {% if m.sub %}<div class="metric-sub">{{ m.sub }}</div>{% endif %}
+{% else %}
               <ul class="metric-list">
                 {% for m in section_metrics %}
                   <li>
                     <span class="stat-number">{{ m.value }}</span>
-                    <span class="stat-label">{{ m.label }}{{ m.unit | unit_label }}</span>
+                    <span class="stat-label">{{ m.label }}{{ m.value | pluralize(m.unit) }}</span>
                   </li>
                 {% endfor %}
               </ul>

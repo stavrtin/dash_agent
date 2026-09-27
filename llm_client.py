@@ -33,7 +33,7 @@ class LLMClient:
         temperature: float = 0.1,
         top_p: float = 0.95,
         max_tokens: int = 16000,
-        num_ctx: int = 16384,
+        num_ctx: int = 24576,
         timeout: float = 900.0,
     ):
         self.base_url = base_url.rstrip("/")

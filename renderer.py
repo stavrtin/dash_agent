@@ -76,6 +76,7 @@ class DashboardRenderer:
         self.env.filters["dmy"] = self._dmy
         self.env.filters["strip_link"] = self._strip_link
         self.env.filters["unit_label"] = self._unit_label
+        self.env.filters["pluralize"] = self._pluralize
 
     @classmethod
     def _fa_class(cls, emoji: str | None) -> str:
@@ -134,4 +135,58 @@ class DashboardRenderer:
         u = str(unit).strip().lower()
         if u in cls._UNIT_SUPPRESS:
             return ""
+        return f" · {unit}"
+
+    @staticmethod
+    def _plural_form(n, forms: tuple[str, str, str]) -> str:
+        """
+        Склоняет существительное по числу n.
+        forms = (для 1, для 2-4, для 5-20)
+        Например: ('случай', 'случая', 'случаев')
+        """
+        try:
+            n = abs(int(float(n)))
+        except (ValueError, TypeError):
+            return forms[2]  # fallback
+
+        n_mod100 = n % 100
+        n_mod10 = n % 10
+
+        if 11 <= n_mod100 <= 14:
+            return forms[2]
+        if n_mod10 == 1:
+            return forms[0]
+        if 2 <= n_mod10 <= 4:
+            return forms[1]
+        return forms[2]
+
+    @classmethod
+    def _pluralize(cls, value, unit: str | None) -> str:
+        """
+        Возвращает ' · <склонённая единица>' или пусто, если единица штучная.
+        value — число (int/float/str), unit — базовая форма ('случай', 'место').
+        """
+        if not unit:
+            return ""
+        u = str(unit).strip().lower()
+
+        # Словарь базовых форм → три формы склонения
+        forms_map = {
+            "случай": ("случай", "случая", "случаев"),
+            "обращение": ("обращение", "обращения", "обращений"),
+            "сообщение": ("сообщение", "сообщения", "сообщений"),
+            "место": ("место", "места", "мест"),
+            "объект": ("объект", "объекта", "объектов"),
+            "факт": ("факт", "факта", "фактов"),
+            "проверка": ("проверка", "проверки", "проверок"),
+            "жалоба": ("жалоба", "жалобы", "жалоб"),
+            "дерево": ("дерево", "дерева", "деревьев"),
+            "человек": ("человек", "человека", "человек"),
+        }
+
+        if u in forms_map:
+            return " · " + cls._plural_form(value, forms_map[u])
+
+        # Если единица неизвестна — вернуть как есть
+        # (%, тыс. руб., га, руб. не склоняются)
         return f" · {unit}"

@@ -3,7 +3,7 @@ from openai import OpenAI
 from prompts import SYSTEM_PROMPT
 
 client = OpenAI(
-    base_url="http://localhost:11434/v1",
+    base_url="http://localhost:1234/v1",
     api_key="ollama",
     timeout=300.0,
 )
