@@ -212,6 +212,78 @@ def _safe_extract(client: LLMClient, raw: str, max_attempts: int = 3) -> dict | 
     return None
 
 
+def _validate_smi_groups(data: dict, raw_text: str) -> list[str]:
+    """Проверяет, что карточки распределены по группам корректно."""
+    problems = []
+    smi = data.get("smi") or {}
+    groups = smi.get("groups") or []
+
+    # Считаем карточки по группам
+    counts = {g.get("criticality"): len(g.get("cards", [])) for g in groups}
+
+    # Проверяем, есть ли в исходнике маркер "низкая критичность"
+    raw_low = raw_text.lower().replace("ё", "е")
+    if "низкая критичность" in raw_low and counts.get("low", 0) == 0:
+        problems.append(
+            "в исходнике есть 'низкая критичность', но группа low пустая"
+        )
+
+    # Проверяем, есть ли в исходнике маркер "средняя критичность"
+    if "средняя критичность" in raw_low and counts.get("medium", 0) == 0:
+        problems.append(
+            "в исходнике есть 'средняя критичность', но группа medium пустая"
+        )
+
+    # Проверяем, есть ли в исходнике маркер "высокая критичность"
+    if "высокая критичность" in raw_low and counts.get("high", 0) == 0:
+        problems.append(
+            "в исходнике есть 'высокая критичность', но группа high пустая"
+        )
+
+    return problems
+
+
+def _sanitize_smi_markers(text: str) -> str:
+    """
+    Приводит маркеры критичности СМИ к единому виду:
+    - убирает пробелы перед эмодзи,
+    - ставит их на отдельную строку с '---' перед ними,
+    - добавляет пустую строку после.
+    Модель видит чёткие разделители и не путает группы.
+    """
+    # Список эмодзи критичности
+    markers = ["🔴", "🟡", "🟢"]
+
+    # Ключевые слова-указатели критичности
+    crit_words = {
+        "высокая критичность": "🔴",
+        "средняя критичность": "🟡",
+        "низкая критичность": "🟢",
+    }
+
+    lines = text.split("\n")
+    result = []
+    for line in lines:
+        stripped = line.strip()
+        low = stripped.lower().replace("ё", "е")
+
+        is_marker = False
+        # Проверяем, что строка содержит "X критичность"
+        for key, emoji in crit_words.items():
+            if key in low:
+                is_marker = True
+                # Нормализуем: '--- 🔴 Высокая критичность ---'
+                pretty = key.capitalize().replace("критичность", "КРИТИЧНОСТЬ")
+                result.append("")
+                result.append(f"===== {emoji} {pretty} =====")
+                result.append("")
+                break
+
+        if not is_marker:
+            result.append(line)
+
+    return "\n".join(result)
+
 # ============================================================================
 # Основной пайплайн
 # ============================================================================
@@ -224,6 +296,7 @@ def run(
     model: str,
 ) -> int:
     raw = input_path.read_text(encoding="utf-8")
+    raw = _sanitize_smi_markers(raw)  # ← добавить
     log.info("Прочитан файл %s (%d символов)", input_path, len(raw))
 
     client = LLMClient(base_url=base_url, model=model)
