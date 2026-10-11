@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from config import load_llm_config
 from llm_client import LLMClient
 from renderer import DashboardRenderer
 from schemas import Report
@@ -30,6 +31,7 @@ REQUIRED_SECTIONS = {
     "water",        # Вода
     "land_pollution",  # Отходы
 }
+
 
 def _has_chinese(text: str) -> bool:
     """Проверяет, есть ли в тексте китайские иероглифы."""
@@ -63,8 +65,6 @@ def _validate_json_structure(data: dict) -> list[str]:
     missing_sections = REQUIRED_SECTIONS - present_sections
     if missing_sections:
         problems.append(f"отсутствуют секции: {sorted(missing_sections)}")
-
-    return problems
 
     return problems
 
@@ -284,6 +284,7 @@ def _sanitize_smi_markers(text: str) -> str:
 
     return "\n".join(result)
 
+
 # ============================================================================
 # Основной пайплайн
 # ============================================================================
@@ -292,14 +293,17 @@ def run(
     input_path: Path,
     html_out: Path,
     json_out: Path | None,
-    base_url: str,
-    model: str,
+    api_key: str | None,
+    base_url: str | None,
+    model: str | None,
 ) -> int:
     raw = input_path.read_text(encoding="utf-8")
-    raw = _sanitize_smi_markers(raw)  # ← добавить
+    raw = _sanitize_smi_markers(raw)
     log.info("Прочитан файл %s (%d символов)", input_path, len(raw))
 
-    client = LLMClient(base_url=base_url, model=model)
+    cfg = load_llm_config(api_key=api_key, base_url=base_url, model=model)
+    client = LLMClient(cfg)
+
     data = _safe_extract(client, raw, max_attempts=3)
 
     if data is None:
@@ -331,7 +335,7 @@ def run(
 
 def main() -> int:
     p = argparse.ArgumentParser(
-        description="TXT-справка → JSON → HTML-дашборд (Ollama + 14B)"
+        description="TXT-справка → JSON → HTML-дашборд (OpenAI-совместимый API / Ollama)"
     )
     p.add_argument("-i", "--input",  type=Path,
                    default=Path("input/итоги_24_30.txt"))
@@ -339,13 +343,20 @@ def main() -> int:
                    default=Path("out/dashboard.html"))
     p.add_argument("-j", "--json",   type=Path,
                    default=Path("out/report.json"))
-    p.add_argument("--base-url", default="http://127.0.0.1:11434",
-                   help="Ollama через SSH-туннель (локальный порт)")
-    p.add_argument("--model", default="qwen2.5:14b-instruct-q4_K_M",
-                   help="Имя модели в Ollama")
+
+    # CLI перебивает .env, если задан
+    p.add_argument("--api-key",  default=None,
+                   help="OPENAI_API_KEY (иначе берётся из .env)")
+    p.add_argument("--base-url", default=None,
+                   help="OPENAI_BASE_URL (иначе из .env)")
+    p.add_argument("--model",    default=None,
+                   help="LLM_MODEL (иначе из .env)")
     args = p.parse_args()
 
-    return run(args.input, args.output, args.json, args.base_url, args.model)
+    return run(
+        args.input, args.output, args.json,
+        args.api_key, args.base_url, args.model,
+    )
 
 
 if __name__ == "__main__":
